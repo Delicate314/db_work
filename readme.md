@@ -2,10 +2,10 @@
 
 ## 后端（vehicle-sale-manager-end）
 
-- 依赖：JDK 1.8、MySQL、Maven（已安装在 `D:\apache-maven-3.9.12\bin`）。
-- 构建：在仓库根目录执行`D:\apache-maven-3.9.12\bin\mvn clean package -DskipTests`
-- 开发直跑：在 `vehicle-sale-manager-end` 目录执行`D:\apache-maven-3.9.12\bin\mvn spring-boot:run`
-- 运行：构建后进入 `vehicle-sale-manager-end\target`，运行`java -jar vehicle-sale-manager-end-0.0.1-SNAPSHOT.jar`
+- 依赖：JDK 1.8、MySQL、Maven（已安装在 `D:\apache-maven-3.9.12\bin`）。1
+- 构建：在仓库根目录执行 `D:\apache-maven-3.9.12\bin\mvn clean package -DskipTests`
+- 开发直跑：在 `vehicle-sale-manager-end` 目录执行 `D:\apache-maven-3.9.12\bin\mvn spring-boot:run`
+- 运行：构建后进入 `vehicle-sale-manager-end\target`，运行 `java -jar vehicle-sale-manager-end-0.0.1-SNAPSHOT.jar`
 - 配置：`src\main\resources\application.yml` 中可修改数据库、端口等。
 
 D:\apache-maven-3.9.12\bin\mvn spring-boot:run
