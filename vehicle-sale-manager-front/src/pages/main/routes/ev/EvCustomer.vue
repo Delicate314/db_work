@@ -64,6 +64,7 @@
                                     <el-button size="mini" type="primary"
                                         @click.stop="addCompare(item)">加入对比</el-button>
                                     <el-button size="mini" @click.stop="subscribe(item)">库存提醒</el-button>
+                                    <el-button size="mini" type="text" @click.stop="openDetail(item.id)">查看详情</el-button>
                                 </div>
                             </el-card>
                         </el-col>
@@ -358,15 +359,7 @@ export default {
             }
         },
         async openDetail(id) {
-            const res = await vehicleDetail(id)
-            if (res.status) {
-                this.detail = res.data
-                this.orderForm = { store: '', quantity: 1, contactName: '', contactPhone: '', vehicleId: id }
-                this.reviewForm = { rating: 5, comment: '' }
-                this.testDriveForm = { store: '', scheduleTime: '', vehicleId: id }
-                this.detailVisible = true
-                this.loadReviews(id)
-            }
+            this.$router.push({ name: 'evDetail', params: { id } })
         },
         async loadReviews(vehicleId) {
             const res = await listReviews(vehicleId)

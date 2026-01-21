@@ -34,6 +34,14 @@ const mainPage = [
           import(
             /* webpackChunkName: "EvAdmin" */ '../pages/main/routes/ev/EvAdmin'
           )
+      },
+      {
+        path: 'ev-detail/:id',
+        name: 'evDetail',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvVehicleDetail" */ '../pages/main/routes/ev/EvVehicleDetail'
+          )
       }
     ]
   }
