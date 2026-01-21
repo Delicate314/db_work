@@ -64,7 +64,8 @@
                                     <el-button size="mini" type="primary"
                                         @click.stop="addCompare(item)">加入对比</el-button>
                                     <el-button size="mini" @click.stop="subscribe(item)">库存提醒</el-button>
-                                    <el-button size="mini" type="text" @click.stop="openDetail(item.id)">查看详情</el-button>
+                                    <el-button size="mini" type="text"
+                                        @click.stop="openDetail(item.id)">查看详情</el-button>
                                 </div>
                             </el-card>
                         </el-col>
@@ -112,6 +113,9 @@
                     <el-table :data="orderList" size="small" border>
                         <el-table-column prop="orderNo" label="订单编号" width="140" />
                         <el-table-column prop="vehicleId" label="车型ID" width="80" />
+                        <el-table-column label="车型名称" width="150">
+                            <template slot-scope="scope">{{ getVehicleName(scope.row.vehicleId) }}</template>
+                        </el-table-column>
                         <el-table-column prop="quantity" label="数量" width="60" />
                         <el-table-column prop="status" label="状态" width="90" />
                         <el-table-column label="金额">
@@ -128,6 +132,9 @@
                 <el-col :span="12">
                     <el-table :data="testDriveList" size="small" border>
                         <el-table-column prop="vehicleId" label="车型ID" width="80" />
+                        <el-table-column label="车型名称" width="150">
+                            <template slot-scope="scope">{{ getVehicleName(scope.row.vehicleId) }}</template>
+                        </el-table-column>
                         <el-table-column prop="store" label="门店" />
                         <el-table-column prop="scheduleTime" label="预约时间" />
                         <el-table-column prop="status" label="状态" width="100" />
@@ -266,6 +273,7 @@ export default {
             },
             batteryOptions: ['三元锂', '磷酸铁锂', '其他'],
             vehicleList: [],
+            vehicleMap: {}, // 车型ID到车型名称的映射
             compareList: [],
             compareResult: [],
             recommendList: [],
@@ -304,7 +312,7 @@ export default {
         })
     },
     created() {
-        this.loadVehicles()
+        this.loadAllVehicles()
         this.loadRecommend()
         this.loadOrders()
         this.loadTestDrives()
@@ -320,13 +328,29 @@ export default {
             this.filters = { brand: '', minPrice: null, maxPrice: null, minRange: null, maxRange: null, batteryType: '', sort: 'id', order: 'asc' }
             this.loadVehicles()
         },
+        async loadAllVehicles() {
+            try {
+                const res = await searchVehicles({})
+                if (res.status) {
+                    const allVehicles = res.data || []
+                    // 更新车型映射
+                    allVehicles.forEach(vehicle => {
+                        this.vehicleMap[vehicle.id] = `${vehicle.brand} ${vehicle.name}`
+                    })
+                }
+            } catch (error) {
+                console.error('获取车型列表失败:', error)
+            }
+        },
         async loadVehicles() {
             this.loading.vehicles = true
             try {
                 const res = await searchVehicles({
                     ...this.filters,
                     minPrice: this.filters.minPrice ? this.filters.minPrice * 10000 : null,
-                    maxPrice: this.filters.maxPrice ? this.filters.maxPrice * 10000 : null
+                    maxPrice: this.filters.maxPrice ? this.filters.maxPrice * 10000 : null,
+                    minRange: this.filters.minRange > 0 ? this.filters.minRange : null,
+                    maxRange: this.filters.maxRange > 0 ? this.filters.maxRange : null
                 })
                 if (res.status) {
                     this.vehicleList = res.data || []
@@ -334,6 +358,9 @@ export default {
             } finally {
                 this.loading.vehicles = false
             }
+        },
+        getVehicleName(vehicleId) {
+            return this.vehicleMap[vehicleId] || '未知车型'
         },
         async loadRecommend() {
             if (!this.userId) return
@@ -389,10 +416,14 @@ export default {
         },
         async submitReview() {
             const completed = this.orderList.find(o => o.vehicleId === this.detail.vehicle.id && o.status === 'COMPLETED')
+            if (!completed) {
+                this.$message.error('只有已提车的订单才能评价')
+                return
+            }
             const payload = {
                 ...this.reviewForm,
                 userId: this.userId,
-                orderId: completed ? completed.id : null
+                orderId: completed.id
             }
             const res = await addReview(payload)
             if (res.status) {

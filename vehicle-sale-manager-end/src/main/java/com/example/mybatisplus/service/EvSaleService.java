@@ -90,10 +90,10 @@ public class EvSaleService {
                                       String sortBy, String order) {
         QueryWrapper<Vehicle> qw = new QueryWrapper<>();
         if (StringUtils.hasText(brand)) qw.eq("brand", brand);
-        if (minPrice != null) qw.ge("guide_price", minPrice);
-        if (maxPrice != null) qw.le("guide_price", maxPrice);
-        if (minRange != null) qw.ge("range_km", minRange);
-        if (maxRange != null) qw.le("range_km", maxRange);
+        if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) qw.ge("guide_price", minPrice);
+        if (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0) qw.le("guide_price", maxPrice);
+        if (minRange != null && minRange > 0) qw.ge("range_km", minRange);
+        if (maxRange != null && maxRange > 0) qw.le("range_km", maxRange);
         if (StringUtils.hasText(batteryType)) qw.eq("battery_type", batteryType);
 
         boolean desc = "desc".equalsIgnoreCase(order);
