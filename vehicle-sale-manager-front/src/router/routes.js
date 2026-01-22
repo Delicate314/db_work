@@ -28,11 +28,35 @@ const mainPage = [
           )
       },
       {
-        path: 'ev-admin',
-        name: 'evAdmin',
+        path: 'ev-vehicle-manage',
+        name: 'evVehicleManage',
         component: () =>
           import(
-            /* webpackChunkName: "EvAdmin" */ '../pages/main/routes/ev/EvAdmin'
+            /* webpackChunkName: "EvVehicleManage" */ '../pages/main/routes/ev/EvVehicleManage'
+          )
+      },
+      {
+        path: 'ev-promotion-finance',
+        name: 'evPromotionFinance',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvPromotionFinance" */ '../pages/main/routes/ev/EvPromotionFinance'
+          )
+      },
+      {
+        path: 'ev-order-manage',
+        name: 'evOrderManage',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvOrderManage" */ '../pages/main/routes/ev/EvOrderManage'
+          )
+      },
+      {
+        path: 'ev-testdrive-audit',
+        name: 'evTestDriveAudit',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvTestDriveAudit" */ '../pages/main/routes/ev/EvTestDriveAudit'
           )
       },
       {

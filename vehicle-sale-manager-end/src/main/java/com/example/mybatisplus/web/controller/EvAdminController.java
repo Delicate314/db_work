@@ -98,6 +98,11 @@ public class EvAdminController {
         return JsonResponse.success(evSaleService.stats(start, end));
     }
 
+    @GetMapping("/test-drives")
+    public JsonResponse<List<TestDriveRecord>> listTestDrives() {
+        return JsonResponse.success(evSaleService.listTestDrives(null));
+    }
+
     @PostMapping("/test-drives/{id}/audit")
     public JsonResponse<TestDriveRecord> auditTestDrive(@PathVariable Long id,
                                                         @RequestBody Map<String, String> body) {
