@@ -30,6 +30,16 @@ export default {
           path: '/main/ev-testdrive-audit',
           icon: 'suncaper-menu-unfold',
           title: '试驾审核'
+        },
+        {
+          path: '/main/ev-user-manage',
+          icon: 'suncaper-menu-unfold',
+          title: '用户信息管理'
+        },
+        {
+          path: '/main/ev-stats',
+          icon: 'suncaper-menu-unfold',
+          title: '数据统计分析'
         }
       ]
     },

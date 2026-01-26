@@ -52,6 +52,9 @@
         <el-form-item label="快充(分钟)">
           <el-input-number v-model="vehicleDialog.form.fastChargeMinutes" :min="0" />
         </el-form-item>
+        <el-form-item label="上市时间">
+          <el-date-picker v-model="vehicleDialog.form.launchDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" style="width: 200px" />
+        </el-form-item>
       </el-form>
       <span slot="footer">
         <el-button @click="vehicleDialog.visible = false">取消</el-button>
@@ -100,7 +103,7 @@ export default {
       if (res.status) this.vehicleList = res.data || []
     },
     openVehicleDialog (row) {
-      this.vehicleDialog.form = row ? { ...row } : { brand: '', name: '', guidePrice: 0, rangeKm: 0, batteryType: '', stock: 0 }
+      this.vehicleDialog.form = row ? { ...row } : { brand: '', name: '', guidePrice: 0, rangeKm: 0, batteryType: '', stock: 0, launchDate: null }
       this.vehicleDialog.visible = true
     },
     async saveVehicle () {

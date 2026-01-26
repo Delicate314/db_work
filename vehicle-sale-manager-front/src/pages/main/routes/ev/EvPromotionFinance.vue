@@ -17,6 +17,12 @@
         <el-form-item label="赠品">
           <el-input v-model="promotionForm.gift" />
         </el-form-item>
+        <el-form-item label="开始日期">
+          <el-date-picker v-model="promotionForm.startDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" style="width: 150px" />
+        </el-form-item>
+        <el-form-item label="结束日期">
+          <el-date-picker v-model="promotionForm.endDate" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" style="width: 150px" />
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="savePromotionForm">保存活动</el-button>
         </el-form-item>
@@ -90,7 +96,9 @@ export default {
         title: '',
         type: '',
         discountRate: null,
-        gift: ''
+        gift: '',
+        startDate: null,
+        endDate: null
       },
       promotionStatus: {
         id: '',
