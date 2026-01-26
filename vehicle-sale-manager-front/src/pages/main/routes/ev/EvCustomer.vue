@@ -170,7 +170,14 @@
                 <h4 class="mt12">下单</h4>
                 <el-form :model="orderForm" label-width="90px" size="small">
                     <el-form-item label="提车门店">
-                        <el-input v-model="orderForm.store" placeholder="请输入门店" />
+                        <el-select v-model="orderForm.store" placeholder="请选择提车门店" filterable style="width: 100%">
+                            <el-option
+                                v-for="store in storeList"
+                                :key="store"
+                                :label="store"
+                                :value="store">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="数量">
                         <el-input-number v-model="orderForm.quantity" :min="1" />
@@ -208,7 +215,14 @@
                 <h4 class="mt12">预约试驾</h4>
                 <el-form :model="testDriveForm" label-width="90px" size="small" inline>
                     <el-form-item label="门店">
-                        <el-input v-model="testDriveForm.store" placeholder="如 上海浦东店" />
+                        <el-select v-model="testDriveForm.store" placeholder="请选择门店" filterable style="width: 200px">
+                            <el-option
+                                v-for="store in storeList"
+                                :key="store"
+                                :label="store"
+                                :value="store">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="时间">
                         <el-date-picker v-model="testDriveForm.scheduleTime" type="datetime" placeholder="选择时间"
@@ -255,6 +269,29 @@ export default {
                 order: 'asc'
             },
             batteryOptions: ['三元锂', '磷酸铁锂', '其他'],
+            // 门店列表
+            storeList: [
+                '北京朝阳店',
+                '北京海淀店',
+                '北京丰台店',
+                '上海浦东店',
+                '上海徐汇店',
+                '上海静安店',
+                '广州天河店',
+                '广州番禺店',
+                '深圳南山店',
+                '深圳福田店',
+                '杭州西湖店',
+                '杭州余杭店',
+                '成都锦江店',
+                '成都高新店',
+                '武汉江汉店',
+                '西安雁塔店',
+                '南京建邺店',
+                '苏州工业园区店',
+                '天津和平店',
+                '重庆渝北店'
+            ],
             vehicleList: [],
             compareList: [],
             compareResult: [],

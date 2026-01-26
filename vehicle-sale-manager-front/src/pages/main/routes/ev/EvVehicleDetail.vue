@@ -55,6 +55,44 @@
               </el-timeline-item>
             </el-timeline>
           </el-card>
+          
+          <!-- 金融方案 -->
+          <el-card shadow="never" class="mt12" body-style="{padding:'10px'}">
+            <div slot="header" class="card-header">金融方案</div>
+            <el-empty v-if="!financialPlans || financialPlans.length === 0" description="暂无金融方案" />
+            <div v-else class="financial-plans">
+              <div 
+                v-for="plan in financialPlans" 
+                :key="plan.id" 
+                class="plan-card"
+                :class="{ 'plan-selected': selectedPlanId === plan.id }"
+                @click="selectPlan(plan.id)">
+                <div class="plan-content">
+                  <div class="plan-header">
+                    <el-radio v-model="selectedPlanId" :label="plan.id" @change="handlePlanChange">
+                      <span class="plan-name">{{ plan.name }}</span>
+                    </el-radio>
+                  </div>
+                  <div class="plan-details">
+                    <div>首付：{{ formatDownPayment(plan) }}</div>
+                    <div>期数：{{ plan.months }}期</div>
+                    <div>年化利率：{{ (plan.annualRate * 100).toFixed(2) }}%</div>
+                  </div>
+                  <div v-if="selectedPlanId === plan.id && detail && detail.vehicle" class="plan-calc">
+                    <div class="calc-result">
+                      <span class="calc-label">月供（1台）：</span>
+                      <span class="calc-value">¥{{ formatPrice(calculateMonthlyPayment(plan, 1)) }}</span>
+                    </div>
+                    <div class="calc-details">
+                      <div>首付金额：¥{{ formatPrice(calculateDownPayment(plan, 1)) }}</div>
+                      <div>贷款金额：¥{{ formatPrice(calculateLoanAmount(plan, 1)) }}</div>
+                      <div>总利息：¥{{ formatPrice(calculateTotalInterest(plan, 1)) }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-card>
         </el-col>
       </el-row>
     </el-card>
@@ -80,13 +118,43 @@
       </el-table>
     </el-card>
 
-    <el-dialog :visible.sync="showOrder" title="下单" width="500px">
-      <el-form :model="orderForm" label-width="90px" size="small">
+    <el-dialog :visible.sync="showOrder" title="下单" width="600px">
+      <el-form :model="orderForm" label-width="100px" size="small">
         <el-form-item label="提车门店">
-          <el-input v-model="orderForm.store" placeholder="请输入门店" />
+          <el-select v-model="orderForm.store" placeholder="请选择提车门店" filterable style="width: 100%">
+            <el-option
+              v-for="store in storeList"
+              :key="store"
+              :label="store"
+              :value="store">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="数量">
           <el-input-number v-model="orderForm.quantity" :min="1" />
+        </el-form-item>
+        <el-form-item label="金融方案">
+          <el-select v-model="orderForm.financialPlanId" placeholder="请选择金融方案" clearable style="width: 100%">
+            <el-option
+              v-for="plan in financialPlans"
+              :key="plan.id"
+              :label="plan.name"
+              :value="plan.id">
+              <span style="float: left">{{ plan.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">
+                首付{{ (plan.downPaymentRate * 100).toFixed(0) }}% / {{ plan.months }}期 / {{ (plan.annualRate * 100).toFixed(2) }}%
+              </span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="orderForm.financialPlanId && detail && detail.vehicle" label="月供金额">
+          <span class="monthly-payment-display">
+            ¥{{ formatPrice(calculateMonthlyPayment(getSelectedPlan())) }}
+          </span>
+          <div class="payment-details">
+            <div>首付：¥{{ formatPrice(calculateDownPayment(getSelectedPlan())) }}</div>
+            <div>贷款：¥{{ formatPrice(calculateLoanAmount(getSelectedPlan())) }}</div>
+          </div>
         </el-form-item>
         <el-form-item label="联系人">
           <el-input v-model="orderForm.contactName" />
@@ -95,7 +163,7 @@
           <el-input v-model="orderForm.contactPhone" />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="orderForm.remark" />
+          <el-input v-model="orderForm.remark" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -107,7 +175,14 @@
     <el-dialog :visible.sync="showTestDrive" title="预约试驾" width="500px">
       <el-form :model="testDriveForm" label-width="90px" size="small">
         <el-form-item label="门店">
-          <el-input v-model="testDriveForm.store" placeholder="如 上海浦东店" />
+          <el-select v-model="testDriveForm.store" placeholder="请选择门店" filterable style="width: 100%">
+            <el-option
+              v-for="store in storeList"
+              :key="store"
+              :label="store"
+              :value="store">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="时间">
           <el-date-picker v-model="testDriveForm.scheduleTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" />
@@ -129,7 +204,8 @@ import {
   addReview,
   createOrder,
   createTestDrive,
-  subscribeInventory
+  subscribeInventory,
+  getFinancialPlans
 } from '@/api/ev'
 
 export default {
@@ -138,14 +214,40 @@ export default {
     return {
       detail: null,
       reviews: [],
+      financialPlans: [],
+      selectedPlanId: null,
       showOrder: false,
       showTestDrive: false,
+      // 门店列表
+      storeList: [
+        '北京朝阳店',
+        '北京海淀店',
+        '北京丰台店',
+        '上海浦东店',
+        '上海徐汇店',
+        '上海静安店',
+        '广州天河店',
+        '广州番禺店',
+        '深圳南山店',
+        '深圳福田店',
+        '杭州西湖店',
+        '杭州余杭店',
+        '成都锦江店',
+        '成都高新店',
+        '武汉江汉店',
+        '西安雁塔店',
+        '南京建邺店',
+        '苏州工业园区店',
+        '天津和平店',
+        '重庆渝北店'
+      ],
       orderForm: {
         store: '',
         quantity: 1,
         contactName: '',
         contactPhone: '',
-        remark: ''
+        remark: '',
+        financialPlanId: null
       },
       testDriveForm: {
         store: '',
@@ -233,23 +335,106 @@ export default {
       const num = Number(val) / 10000
       return num.toFixed(2) + ' 万'
     },
+    formatPrice(val) {
+      if (val === null || val === undefined) return '0.00'
+      return Number(val).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
     async fetchDetail() {
       const res = await vehicleDetail(this.vehicleId)
       if (res.status) {
         this.detail = res.data
         this.loadReviews()
+        this.loadFinancialPlans()
       }
+    },
+    async loadFinancialPlans() {
+      const res = await getFinancialPlans(this.vehicleId)
+      if (res.status) {
+        this.financialPlans = res.data || []
+        if (this.financialPlans.length > 0) {
+          this.selectedPlanId = this.financialPlans[0].id
+        }
+      }
+    },
+    selectPlan(planId) {
+      this.selectedPlanId = planId
+      this.handlePlanChange()
+    },
+    handlePlanChange() {
+      // 当选择金融方案时，同步更新下单表单
+      this.orderForm.financialPlanId = this.selectedPlanId
+    },
+    getSelectedPlan() {
+      return this.financialPlans.find(p => p.id === this.orderForm.financialPlanId) || null
+    },
+    formatDownPayment(plan) {
+      return (plan.downPaymentRate * 100).toFixed(0) + '%'
+    },
+    // 计算首付金额
+    calculateDownPayment(plan, quantity = null) {
+      if (!plan || !this.detail || !this.detail.vehicle) return 0
+      const vehiclePrice = Number(this.detail.vehicle.guidePrice) || 0
+      const qty = quantity !== null ? quantity : (this.orderForm.quantity || 1)
+      return vehiclePrice * qty * plan.downPaymentRate
+    },
+    // 计算贷款金额
+    calculateLoanAmount(plan, quantity = null) {
+      if (!plan || !this.detail || !this.detail.vehicle) return 0
+      const vehiclePrice = Number(this.detail.vehicle.guidePrice) || 0
+      const qty = quantity !== null ? quantity : (this.orderForm.quantity || 1)
+      const totalPrice = vehiclePrice * qty
+      return totalPrice - this.calculateDownPayment(plan, qty)
+    },
+    // 计算月供（等额本息）
+    calculateMonthlyPayment(plan, quantity = null) {
+      if (!plan || !this.detail || !this.detail.vehicle) return 0
+      const loanAmount = this.calculateLoanAmount(plan, quantity)
+      if (loanAmount <= 0) return 0
+      
+      // 月利率 = 年利率 / 12
+      const monthlyRate = plan.annualRate / 12
+      const months = plan.months
+      
+      // 等额本息计算公式：月供 = 贷款本金 × [月利率 × (1+月利率)^还款月数] / [(1+月利率)^还款月数 - 1]
+      if (monthlyRate === 0) {
+        // 无利息情况
+        return loanAmount / months
+      }
+      
+      const pow = Math.pow(1 + monthlyRate, months)
+      return loanAmount * (monthlyRate * pow) / (pow - 1)
+    },
+    // 计算总利息
+    calculateTotalInterest(plan, quantity = null) {
+      if (!plan) return 0
+      const monthlyPayment = this.calculateMonthlyPayment(plan, quantity)
+      const loanAmount = this.calculateLoanAmount(plan, quantity)
+      return monthlyPayment * plan.months - loanAmount
     },
     async loadReviews() {
       const res = await listReviews(this.vehicleId)
       if (res.status) this.reviews = res.data || []
     },
     async submitOrder() {
-      const payload = { ...this.orderForm, userId: this.userId, vehicleId: this.vehicleId }
+      const payload = { 
+        ...this.orderForm, 
+        userId: this.userId, 
+        vehicleId: this.vehicleId,
+        financialPlanId: this.orderForm.financialPlanId || null
+      }
       const res = await createOrder(payload)
       if (res.status) {
         this.$message.success('下单成功')
         this.showOrder = false
+        // 重置表单
+        this.orderForm = {
+          store: '',
+          quantity: 1,
+          contactName: '',
+          contactPhone: '',
+          remark: '',
+          financialPlanId: null
+        }
         this.fetchDetail()
       }
     },
@@ -332,6 +517,98 @@ export default {
       justify-content: center;
       height: 100%;
     }
+  }
+
+  .financial-plans {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .plan-card {
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid #e4e7ed;
+      border-radius: 4px;
+      padding: 12px;
+      background-color: #fff;
+
+      &:hover {
+        border-color: #409eff;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      &.plan-selected {
+        border-color: #409eff;
+        background-color: #ecf5ff;
+      }
+
+      .plan-content {
+        .plan-header {
+          margin-bottom: 8px;
+
+          .plan-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+            margin-left: 8px;
+          }
+        }
+
+        .plan-details {
+          display: flex;
+          gap: 16px;
+          font-size: 14px;
+          color: #606266;
+          margin-bottom: 8px;
+          margin-left: 28px;
+        }
+
+        .plan-calc {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #e4e7ed;
+          margin-left: 28px;
+
+          .calc-result {
+            margin-bottom: 8px;
+
+            .calc-label {
+              font-size: 14px;
+              color: #606266;
+            }
+
+            .calc-value {
+              font-size: 24px;
+              font-weight: 700;
+              color: #e67e22;
+              margin-left: 8px;
+            }
+          }
+
+          .calc-details {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #909399;
+          }
+        }
+      }
+    }
+  }
+
+  .monthly-payment-display {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e67e22;
+  }
+
+  .payment-details {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #909399;
+    display: flex;
+    gap: 16px;
   }
 }
 </style>

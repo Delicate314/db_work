@@ -123,4 +123,9 @@ public class EvCustomerController {
     public JsonResponse<UserProfile> profile(@RequestParam Long userId) {
         return JsonResponse.success(evSaleService.getUserProfile(userId));
     }
+
+    @GetMapping("/financial-plans")
+    public JsonResponse<List<FinancialPlan>> financialPlans(@RequestParam Long vehicleId) {
+        return JsonResponse.success(evSaleService.listFinancialPlans(vehicleId));
+    }
 }
