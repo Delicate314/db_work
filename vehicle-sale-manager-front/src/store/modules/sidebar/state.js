@@ -12,9 +12,24 @@ export default {
     2: {
       main: [
         {
-          path: '/main/ev-admin',
+          path: '/main/ev-vehicle-manage',
           icon: 'suncaper-menu-unfold',
-          title: '新能源管理'
+          title: '车型管理'
+        },
+        {
+          path: '/main/ev-promotion-finance',
+          icon: 'suncaper-menu-unfold',
+          title: '促销与金融'
+        },
+        {
+          path: '/main/ev-order-manage',
+          icon: 'suncaper-menu-unfold',
+          title: '订单管理'
+        },
+        {
+          path: '/main/ev-testdrive-audit',
+          icon: 'suncaper-menu-unfold',
+          title: '试驾审核'
         }
       ]
     },

@@ -599,7 +599,9 @@ public class EvSaleService {
     // -------------------- 统计 --------------------
 
     public Map<String, Object> stats(LocalDate start, LocalDate end) {
-        LocalDateTime from = start == null ? LocalDateTime.MIN : start.atStartOfDay();
+        // MySQL DATETIME 支持的范围是 1000-01-01 到 9999-12-31
+        // 使用 LocalDateTime.MIN 会超出范围，改为使用 MySQL 支持的最小日期
+        LocalDateTime from = start == null ? LocalDate.of(1000, 1, 1).atStartOfDay() : start.atStartOfDay();
         LocalDateTime to = end == null ? LocalDateTime.now() : end.plusDays(1).atStartOfDay();
 
         List<OrderRecord> scoped = orderRecordMapper.selectList(new LambdaQueryWrapper<OrderRecord>()
