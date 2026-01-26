@@ -7,6 +7,15 @@
         <div class="title">
           新能源汽车销售管理系统
         </div>
+
+        <!-- 入口选择 -->
+        <div class="login-type-selector">
+          <el-radio-group v-model="loginForm.loginType" @change="handleLoginTypeChange">
+            <el-radio-button label="user">用户端</el-radio-button>
+            <el-radio-button label="admin">管理员端</el-radio-button>
+          </el-radio-group>
+        </div>
+
         <div class="login-context">
 
           <el-form-item class="username-pad" prop="loginName">
@@ -66,7 +75,8 @@ export default {
         loginName: '',
         password: '',
         waiting: false,
-        inputcode: ''
+        inputcode: '',
+        loginType: 'user' // 默认用户端，可选：'user' 或 'admin'
       },
       identifyCodes: '1234567890abcdefjhijklinpoqrsduvwxyz', // 随机串内容,从这里随机抽几个显示验证码
       identifyCode: '',
@@ -92,6 +102,13 @@ export default {
       user.state.loginName = res.data.name
       user.state.type = res.data.role.id
     },
+    handleLoginTypeChange() {
+      // 切换入口时清空表单
+      this.loginForm.loginName = ''
+      this.loginForm.password = ''
+      this.loginForm.inputcode = ''
+      this.refreshCode()
+    },
     login() {
       if (this.loginForm.loginName === '' || this.loginForm.password === '' || this.loginForm.inputcode === '') {
         this.$message.error('请填写完整用户名、密码和验证码')
@@ -100,8 +117,32 @@ export default {
         if (this.loginForm.inputcode === this.identifyCode) {
           this.loginForm.waiting = true
 
-          userLogin(this.loginForm).then(res => {
+          // 只发送后端需要的字段：loginName 和 password
+          const loginData = {
+            loginName: this.loginForm.loginName,
+            password: this.loginForm.password
+          }
+
+          userLogin(loginData).then(res => {
             if (res.data !== null) {
+              // 验证角色是否匹配选择的入口
+              const userRoleId = res.data.role.id
+              const isAdmin = userRoleId === 2 // 角色ID 2 是中心管理员
+
+              if (this.loginForm.loginType === 'admin' && !isAdmin) {
+                this.loginForm.waiting = false
+                this.$message.error('该账号不是管理员，请从用户端登录')
+                this.refreshCode()
+                return
+              }
+
+              if (this.loginForm.loginType === 'user' && isAdmin) {
+                this.loginForm.waiting = false
+                this.$message.error('管理员账号请从管理员端登录')
+                this.refreshCode()
+                return
+              }
+
               this.storeUserInfo(res)
               this.$message.success('登陆成功')
               this.$router.push({ path: '/main' })
@@ -110,6 +151,10 @@ export default {
               this.$message.error('用户名或密码错误')
               this.refreshCode()
             }
+          }).catch(err => {
+            this.loginForm.waiting = false
+            this.$message.error('登录失败，请稍后重试')
+            this.refreshCode()
           })
         } else {
           this.$message.error('验证码错误')
@@ -173,8 +218,14 @@ export default {
   background: #ffffff;
   width: 400px;
   padding: 25px 25px 5px 25px;
-  height: 400px;
+  height: 460px;
   box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+.login-type-selector {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .verifycode-input {
