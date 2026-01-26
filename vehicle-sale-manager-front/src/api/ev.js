@@ -34,6 +34,9 @@ export const changePromotionStatus = (id, status) => http.POST(`/api/ev/admin/pr
 
 export const listUsers = () => http.GET('/api/ev/admin/users')
 export const saveUser = (data) => http.POST('/api/ev/admin/users', data)
+export const deleteUser = (id) => http.DELETE(`/api/ev/admin/users/${id}`)
+export const getUserOrders = (id) => http.GET(`/api/ev/admin/users/${id}/orders`)
+export const getUserBrowseHistory = (id) => http.GET(`/api/ev/admin/users/${id}/browse-history`)
 
 export const stats = (start, end) => http.GET('/api/ev/admin/stats', { start, end })
 

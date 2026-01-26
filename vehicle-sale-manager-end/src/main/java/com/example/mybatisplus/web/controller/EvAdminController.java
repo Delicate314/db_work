@@ -92,6 +92,22 @@ public class EvAdminController {
         return JsonResponse.success(evSaleService.saveUser(userProfile), "用户信息已保存");
     }
 
+    @DeleteMapping("/users/{id}")
+    public JsonResponse<Void> deleteUser(@PathVariable Long id) {
+        evSaleService.deleteUser(id);
+        return JsonResponse.successMessage("用户已删除");
+    }
+
+    @GetMapping("/users/{id}/orders")
+    public JsonResponse<List<OrderRecord>> getUserOrders(@PathVariable Long id) {
+        return JsonResponse.success(evSaleService.listOrders(id));
+    }
+
+    @GetMapping("/users/{id}/browse-history")
+    public JsonResponse<List<BrowseHistory>> getUserBrowseHistory(@PathVariable Long id) {
+        return JsonResponse.success(evSaleService.getUserBrowseHistory(id));
+    }
+
     @GetMapping("/stats")
     public JsonResponse<Map<String, Object>> stats(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate start,
                                                    @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end) {

@@ -60,6 +60,22 @@ const mainPage = [
           )
       },
       {
+        path: 'ev-user-manage',
+        name: 'evUserManage',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvUserManage" */ '../pages/main/routes/ev/EvUserManage'
+          )
+      },
+      {
+        path: 'ev-stats',
+        name: 'evStats',
+        component: () =>
+          import(
+            /* webpackChunkName: "EvStats" */ '../pages/main/routes/ev/EvStats'
+          )
+      },
+      {
         path: 'ev-detail/:id',
         name: 'evDetail',
         component: () =>

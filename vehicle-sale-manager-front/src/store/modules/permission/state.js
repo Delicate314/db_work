@@ -7,7 +7,7 @@ export default {
     },
     2: {
       // 管理员：只使用新能源汽车管理后台
-      main: ['evVehicleManage', 'evPromotionFinance', 'evOrderManage', 'evTestDriveAudit', 'evDetail']
+      main: ['evVehicleManage', 'evPromotionFinance', 'evOrderManage', 'evTestDriveAudit', 'evUserManage', 'evStats', 'evDetail']
     },
     3: {
       main: []

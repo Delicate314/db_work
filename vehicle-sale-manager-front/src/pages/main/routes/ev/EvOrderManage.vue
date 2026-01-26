@@ -6,6 +6,9 @@
       <el-table-column prop="vehicleId" label="车型ID" width="90" />
       <el-table-column prop="quantity" label="数量" width="70" />
       <el-table-column prop="status" label="状态" width="110" />
+      <el-table-column prop="createdAt" label="下单时间" width="160">
+        <template slot-scope="scope">{{ formatDate(scope.row.createdAt) }}</template>
+      </el-table-column>
       <el-table-column label="金额">
         <template slot-scope="scope">{{ fmtPrice(scope.row.totalAmount) }}</template>
       </el-table-column>
@@ -41,6 +44,10 @@ export default {
       if (val === null || val === undefined) return '--'
       const num = Number(val) / 10000
       return num.toFixed(2) + ' 万'
+    },
+    formatDate (val) {
+      if (!val) return '--'
+      return new Date(val).toLocaleString('zh-CN')
     },
     async loadOrders () {
       const res = await adminOrders()

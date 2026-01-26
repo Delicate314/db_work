@@ -577,6 +577,18 @@ public class EvSaleService {
     }
 
     @Transactional
+    public void deleteUser(Long userId) {
+        userProfileMapper.deleteById(userId);
+    }
+
+    public List<BrowseHistory> getUserBrowseHistory(Long userId) {
+        return browseHistoryMapper.selectList(
+                new LambdaQueryWrapper<BrowseHistory>()
+                        .eq(BrowseHistory::getUserId, userId)
+                        .orderByDesc(BrowseHistory::getBrowseTime));
+    }
+
+    @Transactional
     public FinancialPlan saveFinancialPlan(FinancialPlan plan) {
         if (plan.getVehicleId() == null || vehicleMapper.selectById(plan.getVehicleId()) == null) {
             throw new IllegalArgumentException("车型不存在");
